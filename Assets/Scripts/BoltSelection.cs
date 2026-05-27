@@ -77,7 +77,7 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         Vector3 endPosition = new Vector3(boltNutObj.transform.position.x, boltNutEndPoint.position.y, boltNutObj.transform.position.z);
         
         Quaternion startRotation = boltNutObj.transform.rotation;
-        Quaternion endRotation = boltNutObj.transform.rotation * Quaternion.Euler(0, 0, 180);
+        Quaternion endRotation = boltNutObj.transform.rotation * Quaternion.Euler(0, 0, -180);
 
         while (elapsedTime < boltMoveDuration)
         {
