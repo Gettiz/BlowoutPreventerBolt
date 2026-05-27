@@ -107,17 +107,25 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             StopCoroutine(moveBoltNutNumerator);
             moveBoltNutNumerator = null;
         }
-        
+
+        ResetBolts();
+    }
+    
+    private void ResetBolts()
+    {
         hasBeenMoved = false;
         boltNutObj.SetActive(false);
         boltNutObj.transform.position = new Vector3(boltNutObj.transform.position.x, boltNutStartPoint.position.y, boltNutObj.transform.position.z);
     }
+    
+    private void GameWon() { ResetBolts(); }
 
     private void OnEnable()
     {
         BoltGameManager.Bolt_EndVisualization += DisableInteraction;
         BoltGameManager.Bolt_GameStarted += EnableInteraction;
         BoltGameManager.Bolt_GameOver += ResetBoltOnGameOver;
+        BoltGameManager.Bolt_GameWon += GameWon;
     }
 
     private void OnDisable()
@@ -125,5 +133,6 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         BoltGameManager.Bolt_EndVisualization -= DisableInteraction;
         BoltGameManager.Bolt_GameStarted -= EnableInteraction;
         BoltGameManager.Bolt_GameOver -= ResetBoltOnGameOver;
+        BoltGameManager.Bolt_GameWon -= GameWon;
     }
 }

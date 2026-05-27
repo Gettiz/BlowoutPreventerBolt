@@ -24,6 +24,7 @@ public class BoltGameManager : MonoBehaviour
     public void StartBoltGame()
     {
         isGameActive = true;
+        currentSequenceIndex = 0;
         Bolt_GameStarted?.Invoke();
     }
 
