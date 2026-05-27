@@ -6,21 +6,28 @@ public class MainUI : MonoBehaviour
     // Since there no much going on all the UI will be in this script
 
     [SerializeField] BoltGameManager boltGameManager;
-    [SerializeField] private GameObject startCanvas, gameOverCanvas, visualizeCanvas;
+    [SerializeField] private GameObject startCanvas, visualizeCanvas, winCanvas;
     
     public enum UiStates
     {
         UiNone,
         UiMenu,
-        UiInGame,
+        UiVisualizeMenu,
+        UiWinMenu
     }
 
     public UiStates uiState;
     
     public void StartGame()
     {
-        uiState = UiStates.UiNone;
-        VisualizeOrder();
+        SwitchUiState(UiStates.UiNone);
+        boltGameManager.StartBoltGame();
+    }
+    
+    public void VisualizeOrder()
+    {
+        SwitchUiState(UiStates.UiNone);
+        boltGameManager.StartVisualization();
     }
 
     private void SwitchUiState(UiStates state)
@@ -31,43 +38,49 @@ public class MainUI : MonoBehaviour
                    default:
                    {
                        startCanvas.SetActive(false);
-                       gameOverCanvas.SetActive(false);
-                       visualizeCanvas.SetActive(false);  
+                       visualizeCanvas.SetActive(false);
+                       winCanvas.SetActive(false);
                    }
                        break;
                    case UiStates.UiMenu:
                    {
                        startCanvas.SetActive(true);
-                       gameOverCanvas.SetActive(true);
                        visualizeCanvas.SetActive(false);
+                       winCanvas.SetActive(false);
                    }
                        break;
-                   case UiStates.UiInGame:
+                   case UiStates.UiVisualizeMenu:
                    {
                        startCanvas.SetActive(false);
-                       gameOverCanvas.SetActive(false);
                        visualizeCanvas.SetActive(true);
+                       winCanvas.SetActive(false);
+                   }
+                       break;
+                   case UiStates.UiWinMenu:
+                   {
+                       startCanvas.SetActive(false);
+                       visualizeCanvas.SetActive(false);
+                       winCanvas.SetActive(true);
                    }
                        break;
         }
 
     }
     
-    private void EnableMenu() {SwitchUiState(UiStates.UiMenu);}
-
-    public void VisualizeOrder()
-    {
-        SwitchUiState(UiStates.UiNone);
-        boltGameManager.StartBoltGame();
-    }
+    private void EnableVisualizationMenu() { SwitchUiState(UiStates.UiVisualizeMenu); }
+    private void EnableWinMenu() { SwitchUiState(UiStates.UiWinMenu); }
 
     private void OnEnable()
     {
-        BoltGameManager.Bolt_GameOver += EnableMenu;
+        BoltGameManager.Bolt_GameOver += EnableVisualizationMenu;
+        BoltGameManager.Bolt_EndVisualization += EnableVisualizationMenu;
+        BoltGameManager.Bolt_GameWon += EnableWinMenu;
     }
 
     private void OnDisable()
     {
-        BoltGameManager.Bolt_GameOver -= EnableMenu;
+        BoltGameManager.Bolt_GameOver -= EnableVisualizationMenu;
+        BoltGameManager.Bolt_EndVisualization -= EnableVisualizationMenu;
+        BoltGameManager.Bolt_GameWon -= EnableWinMenu;
     }
 }

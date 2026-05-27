@@ -3,8 +3,6 @@ using UnityEngine.InputSystem;
 
 public class OrbitalCameraDrag : MonoBehaviour
 {
-    private bool canMoveCamera = false;
-    
     [SerializeField] private Transform cameraTarget;
     [SerializeField] private InputManager inputManager;
     
@@ -23,6 +21,7 @@ public class OrbitalCameraDrag : MonoBehaviour
     [SerializeField] private Transform visualizationPosition;
     [SerializeField] private float visualizationDistance = 1;
     
+    private bool canMoveCamera = false;
     private bool isDragging;
     
     private float currentYaw;
@@ -66,11 +65,13 @@ public class OrbitalCameraDrag : MonoBehaviour
     private void OnMouseScrollUp(InputAction.CallbackContext context)
     {
         if (context.performed) currentDistance -= maxDistancePerScroll;
+        UpdateCamera();
     }
     
     private void OnMouseScrollDown(InputAction.CallbackContext context)
     {
         if (context.performed) currentDistance += maxDistancePerScroll;
+        UpdateCamera();
     }
 
     public void SetCameraToVisualizationPosition()
@@ -84,8 +85,14 @@ public class OrbitalCameraDrag : MonoBehaviour
     private void LateUpdate()
     {
         if (cameraTarget == null) return;
-        if (!canMoveCamera || !isDragging) return;
-        
+        if (!isDragging) return;
+
+        UpdateCamera();
+    }
+
+    private void UpdateCamera()
+    {
+        if (!canMoveCamera) return;
         Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0);
         
         currentDistance = Mathf.Clamp(currentDistance, minDistance, maxDistance);
@@ -107,6 +114,7 @@ public class OrbitalCameraDrag : MonoBehaviour
         inputManager.MouseScrollDownEvent += OnMouseScrollDown;
         BoltGameManager.Bolt_GameStarted += EnableCameraMovement;
         BoltGameManager.Bolt_GameOver += DisableCameraMovement;
+        BoltGameManager.Bolt_EndVisualization += DisableCameraMovement;
         BoltGameManager.Bolt_StartVisualization += SetCameraToVisualizationPosition;
     }
     
@@ -118,6 +126,7 @@ public class OrbitalCameraDrag : MonoBehaviour
         inputManager.MouseScrollDownEvent -= OnMouseScrollDown;
         BoltGameManager.Bolt_GameStarted -= EnableCameraMovement;
         BoltGameManager.Bolt_GameOver -= DisableCameraMovement;
+        BoltGameManager.Bolt_EndVisualization -= DisableCameraMovement;
         BoltGameManager.Bolt_StartVisualization -= SetCameraToVisualizationPosition;
     }
 }

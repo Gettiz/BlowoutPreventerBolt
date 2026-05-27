@@ -7,12 +7,14 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 {
     public static event Action<GameObject> OnBoltClicked;
     
+    [Header("Material Section")]
     [SerializeField] private Material[] hoverMaterials;
 
     private Renderer objRenderer;
     private Material[] originalMaterials;
     private Material[] combinedMaterialsList;
 
+    [Header("Main Settings")]
     public GameObject boltNutObj;
     [SerializeField] private float boltMoveDuration = 0.5f;
     private bool hasBeenMoved;
@@ -42,14 +44,14 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     }
 
     public void OnPointerEnter(PointerEventData eventData)
-    { if (!hasBeenMoved) EnableOutline(); }
+    { if (!hasBeenMoved && canInteract) EnableOutline(); }
 
     public void OnPointerExit(PointerEventData eventData)
-    { if (!hasBeenMoved) DisableOutline(); }
+    { if (!hasBeenMoved && canInteract) DisableOutline(); }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (!hasBeenMoved)
+        if (!hasBeenMoved && canInteract)
         {
             moveBoltNutNumerator = StartCoroutine(MoveBoltNut());
             OnBoltClicked?.Invoke(gameObject);
@@ -92,11 +94,14 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void EnableInteraction()
     { canInteract = true; }
+
+    private void DisableInteraction()
+    { canInteract = false; }
     
     private void ResetBoltOnGameOver()
     {
-        canInteract = false;
-
+        DisableInteraction();
+        
         if (moveBoltNutNumerator != null)
         {
             StopCoroutine(moveBoltNutNumerator);
@@ -110,12 +115,14 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void OnEnable()
     {
+        BoltGameManager.Bolt_EndVisualization += DisableInteraction;
         BoltGameManager.Bolt_GameStarted += EnableInteraction;
         BoltGameManager.Bolt_GameOver += ResetBoltOnGameOver;
     }
 
     private void OnDisable()
     {
+        BoltGameManager.Bolt_EndVisualization -= DisableInteraction;
         BoltGameManager.Bolt_GameStarted -= EnableInteraction;
         BoltGameManager.Bolt_GameOver -= ResetBoltOnGameOver;
     }
