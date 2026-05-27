@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public class OrbitalCameraDrag : MonoBehaviour
 {
+    private bool canMoveCamera = false;
+    
     [SerializeField] private Transform cameraTarget;
     [SerializeField] private InputManager inputManager;
     
@@ -11,7 +13,7 @@ public class OrbitalCameraDrag : MonoBehaviour
     [SerializeField] private float defaultDistance = 2f;
     [SerializeField] private float minDistance = 1.5f;
     [SerializeField] private float maxDistance = 4.5f;
-    [SerializeField] private float dragSpeed = 0.1f;
+    [SerializeField] private float dragSpeed = 5f;
     
     [SerializeField] private float minPitch = 0f;
     [SerializeField] private float maxPitch = 90f;
@@ -22,22 +24,6 @@ public class OrbitalCameraDrag : MonoBehaviour
     
     private float currentYaw;
     private float currentPitch;
-
-    private void OnEnable()
-    {
-        inputManager.MoveCameraEvent += OnCameraMove;
-        inputManager.MouseLBEvent += OnMouseLB;
-        inputManager.MouseScrollUpEvent += OnMouseScrollUp;
-        inputManager.MouseScrollDownEvent += OnMouseScrollDown;
-    }
-    
-    private void OnDisable()
-    {
-        inputManager.MoveCameraEvent -= OnCameraMove;
-        inputManager.MouseLBEvent -= OnMouseLB;
-        inputManager.MouseScrollUpEvent -= OnMouseScrollUp;
-        inputManager.MouseScrollDownEvent -= OnMouseScrollDown;
-    }
     
     private void Start()
     {
@@ -58,8 +44,8 @@ public class OrbitalCameraDrag : MonoBehaviour
     {
         if (isDragging)
         {
-            currentYaw += context.ReadValue<Vector2>().x * dragSpeed;
-            currentPitch -= context.ReadValue<Vector2>().y * dragSpeed;
+            currentYaw += context.ReadValue<Vector2>().x * dragSpeed * Time.deltaTime;
+            currentPitch -= context.ReadValue<Vector2>().y * dragSpeed * Time.deltaTime;
             currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
         }
     }
@@ -82,6 +68,7 @@ public class OrbitalCameraDrag : MonoBehaviour
     private void LateUpdate()
     {
         if (cameraTarget == null) return;
+        if (!canMoveCamera) return;
         
         Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0);
         
@@ -90,5 +77,29 @@ public class OrbitalCameraDrag : MonoBehaviour
         
         transform.position = position;
         transform.rotation = rotation;
+    }
+    
+    private void EnableCameraMovement() { canMoveCamera = true; }
+    
+    private void DisableCameraMovement() { canMoveCamera = false; }
+    
+    private void OnEnable()
+    {
+        inputManager.MoveCameraEvent += OnCameraMove;
+        inputManager.MouseLBEvent += OnMouseLB;
+        inputManager.MouseScrollUpEvent += OnMouseScrollUp;
+        inputManager.MouseScrollDownEvent += OnMouseScrollDown;
+        BoltGameManager.Bolt_GameStarted += EnableCameraMovement;
+        BoltGameManager.Bolt_GameOver += DisableCameraMovement;
+    }
+    
+    private void OnDisable()
+    {
+        inputManager.MoveCameraEvent -= OnCameraMove;
+        inputManager.MouseLBEvent -= OnMouseLB;
+        inputManager.MouseScrollUpEvent -= OnMouseScrollUp;
+        inputManager.MouseScrollDownEvent -= OnMouseScrollDown;
+        BoltGameManager.Bolt_GameStarted -= EnableCameraMovement;
+        BoltGameManager.Bolt_GameOver -= DisableCameraMovement;
     }
 }
