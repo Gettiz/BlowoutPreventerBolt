@@ -16,6 +16,7 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public GameObject boltNutObj;
     [SerializeField] private float boltMoveDuration = 0.5f;
     private bool hasBeenMoved;
+    private bool canInteract;
     
     private Coroutine moveBoltNutNumerator;
     
@@ -89,8 +90,13 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         boltNutObj.transform.rotation = endRotation;
     }
 
-    private void ResetBolt()
+    private void EnableInteraction()
+    { canInteract = true; }
+    
+    private void ResetBoltOnGameOver()
     {
+        canInteract = false;
+
         if (moveBoltNutNumerator != null)
         {
             StopCoroutine(moveBoltNutNumerator);
@@ -104,11 +110,13 @@ public class BoltSelection : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void OnEnable()
     {
-        BoltGameManager.Bolt_GameOver += ResetBolt;
+        BoltGameManager.Bolt_GameStarted += EnableInteraction;
+        BoltGameManager.Bolt_GameOver += ResetBoltOnGameOver;
     }
 
     private void OnDisable()
     {
-        BoltGameManager.Bolt_GameOver -= ResetBolt;
+        BoltGameManager.Bolt_GameStarted -= EnableInteraction;
+        BoltGameManager.Bolt_GameOver -= ResetBoltOnGameOver;
     }
 }

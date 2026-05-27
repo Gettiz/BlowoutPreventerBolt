@@ -20,6 +20,9 @@ public class OrbitalCameraDrag : MonoBehaviour
 
     [SerializeField] private float currentDistance;
     
+    [SerializeField] private Transform visualizationPosition;
+    [SerializeField] private float visualizationDistance = 1;
+    
     private bool isDragging;
     
     private float currentYaw;
@@ -32,10 +35,8 @@ public class OrbitalCameraDrag : MonoBehaviour
             Debug.LogWarning("No camera target has been selected or been found");
             return;
         }
-        
-        Vector3 angles = transform.eulerAngles;
-        currentYaw = angles.y;
-        currentPitch = angles.x;
+
+        UpdateCurrentCameraAngle();
 
         currentDistance = defaultDistance;
     }
@@ -48,6 +49,13 @@ public class OrbitalCameraDrag : MonoBehaviour
             currentPitch -= context.ReadValue<Vector2>().y * dragSpeed * Time.deltaTime;
             currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
         }
+    }
+
+    private void UpdateCurrentCameraAngle()
+    {
+        Vector3 angles = transform.eulerAngles;
+        currentYaw = angles.y;
+        currentPitch = angles.x;
     }
 
     private void OnMouseLB(InputAction.CallbackContext context)
@@ -64,11 +72,19 @@ public class OrbitalCameraDrag : MonoBehaviour
     {
         if (context.performed) currentDistance += maxDistancePerScroll;
     }
+
+    public void SetCameraToVisualizationPosition()
+    {
+        transform.position = visualizationPosition.position;
+        transform.rotation = visualizationPosition.rotation; 
+        currentDistance = visualizationDistance;
+        UpdateCurrentCameraAngle();
+    }
     
     private void LateUpdate()
     {
         if (cameraTarget == null) return;
-        if (!canMoveCamera) return;
+        if (!canMoveCamera || !isDragging) return;
         
         Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0);
         
@@ -91,6 +107,7 @@ public class OrbitalCameraDrag : MonoBehaviour
         inputManager.MouseScrollDownEvent += OnMouseScrollDown;
         BoltGameManager.Bolt_GameStarted += EnableCameraMovement;
         BoltGameManager.Bolt_GameOver += DisableCameraMovement;
+        BoltGameManager.Bolt_StartVisualization += SetCameraToVisualizationPosition;
     }
     
     private void OnDisable()
@@ -101,5 +118,6 @@ public class OrbitalCameraDrag : MonoBehaviour
         inputManager.MouseScrollDownEvent -= OnMouseScrollDown;
         BoltGameManager.Bolt_GameStarted -= EnableCameraMovement;
         BoltGameManager.Bolt_GameOver -= DisableCameraMovement;
+        BoltGameManager.Bolt_StartVisualization -= SetCameraToVisualizationPosition;
     }
 }

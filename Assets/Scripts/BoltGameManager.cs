@@ -7,16 +7,34 @@ public class BoltGameManager : MonoBehaviour
     public static event Action Bolt_GameStarted;
     public static event Action Bolt_GameOver;
     public static event Action Bolt_GameWon;
+    public static event Action Bolt_StartVisualization;
 
+    // The execution order is based in the list order which can be changed in the unity inspector 
     [SerializeField] private List<GameObject> boltObjects = new List<GameObject>();
 
     private int currentSequenceIndex = 0;
     private bool isGameActive = false;
-
-    private void Start()
+    
+    public void StartBoltGame()
     {
+        StartVisualization();
         isGameActive = true;
         Bolt_GameStarted?.Invoke();
+    }
+
+    public void StartVisualization()
+    {
+        Bolt_StartVisualization?.Invoke();
+    }
+
+    public void DisableInteraction()
+    {
+        isGameActive = false;
+    }
+
+    public void EnableInteraction()
+    {
+        isGameActive = false;
     }
 
     private void HandleBoltClicked(GameObject clickedBolt)
